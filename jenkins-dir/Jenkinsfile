@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+    tools {
+        jdk 'jdk-17'
+        maven 'maven'
+    }
+    stages {
+        stage('Compile source code...') {
+            steps {
+                script {
+                    echo "compiling source code..."
+                    dir('app/spring-petclinic') {
+                        sh 'mvn clean compile'
+                    }
+                }
+            }
+        }
+        stage('Run test...') {
+            steps {
+                script {
+                    echo "running tests on source code..."
+                    dir('app/spring-petclinic') {
+                        sh 'mvn clean test'
+                    }
+                }
+            }
+        }
+        stage('Build jar') {
+            steps {
+                script {
+                    echo "building jar..."
+                    dir('app') {
+                        sh 'mvn clean package'
+                    }
+                }
+            }
+        }
+        stage('Copy files to ansible server') {
+            //
+        }
+    }
+}
