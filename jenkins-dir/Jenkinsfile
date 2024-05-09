@@ -7,6 +7,9 @@ pipeline {
         jdk 'jdk-17'
         maven 'maven'
     }
+    environment {
+        ANSIBLE_SERVER_IP=""
+    }
     stages {
         stage('Compile source code...') {
             steps {
@@ -39,7 +42,17 @@ pipeline {
             }
         }
         stage('Copy files to ansible server') {
-            //
+            steps {
+                script {
+                    echo 'copying jar file to ansible server...'
+                    def server = "ubuntu@${ANSIBLE_SERVER_IP}" 
+                    //def copyCmd = "cp app/spring-petclinic/target/spring-petclinic-1.0.0-SNAPSHOT.jar ~/ansible-dir/"
+                    sshagent(['ansible-server-ssh-key']) {
+                        sh "scp app/spring-petclinic/target/spring-petclinic-1.0.0-SNAPSHOT.jar ${server}:~/ansible-dir/"  //May need to add the `-o StrictHostKeyChecking=no` flag
+                        //sh "ssh -o StrictHostKeyChecking=no ${server} ${copyCmd}"  Alternative command to copy the jar file to ansible server
+                    }
+                }
+            }
         }
     }
 }
